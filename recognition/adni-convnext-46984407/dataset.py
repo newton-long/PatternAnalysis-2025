@@ -1,15 +1,18 @@
-# dataset.py
+# dataset.py — upgraded augmentation & dataloaders for ConvNeXt ADNI fine-tuning
 from pathlib import Path
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 
 def get_dataloaders(data_dir: str, batch_size: int = 32, image_size: int = 224, val_split: float = 0.2):
     """
-    Loads ADNI and returns train/val/test loaders.
-    - ImageNet normalization (matches ConvNeXt pretraining)
-    - Stronger train augments (crop, flip, blur, random erasing)
-    - Grayscale -> 3 channels
-    - Splits train -> (train/val) if no explicit val exists
+    Loads ADNI dataset and returns train/val/test dataloaders.
+
+    Improvements:
+    - Enhanced augmentation (rotation, color jitter, blur, random erase)
+    - Handles grayscale -> RGB for ConvNeXt
+    - ImageNet normalization for pretrained backbone
+    - RandomResizedCrop scale (0.8–1.0) for better context balance
+    - Safe random split into train/val if not predefined
     """
     data_dir = Path(data_dir)
     if (data_dir / "AD_NC").exists():
@@ -21,18 +24,20 @@ def get_dataloaders(data_dir: str, batch_size: int = 32, image_size: int = 224, 
     imagenet_mean = [0.485, 0.456, 0.406]
     imagenet_std  = [0.229, 0.224, 0.225]
 
-    # Stronger train-time pipeline (wider crop range + blur + erasing)
+    # ---------- Train transforms (strong but stable) ----------
     train_transforms = transforms.Compose([
-        transforms.RandomResizedCrop(image_size, scale=(0.6, 1.0)),
-        transforms.RandomHorizontalFlip(),
-        transforms.Grayscale(num_output_channels=3),
-        transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.5)),
+        transforms.RandomResizedCrop(image_size, scale=(0.8, 1.0)),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomRotation(15),
+        transforms.ColorJitter(brightness=0.25, contrast=0.25, saturation=0.25),
+        transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.5))], p=0.2),
+        transforms.RandomApply([transforms.RandomErasing(p=0.3, scale=(0.02, 0.15), ratio=(0.3, 3.3), value='random')], p=0.5),
+        transforms.Grayscale(num_output_channels=3),  # ensure 3 channels
         transforms.ToTensor(),
         transforms.Normalize(mean=imagenet_mean, std=imagenet_std),
-        transforms.RandomErasing(p=0.25, scale=(0.02, 0.08), ratio=(0.3, 3.3), inplace=True),
     ])
 
-    # Standard eval pipeline (resize->center crop) + 3ch + normalize
+    # ---------- Validation / Test transforms (deterministic) ----------
     val_test_transforms = transforms.Compose([
         transforms.Resize(int(image_size * 1.14)),   # e.g., 256 for 224
         transforms.CenterCrop(image_size),
@@ -41,24 +46,27 @@ def get_dataloaders(data_dir: str, batch_size: int = 32, image_size: int = 224, 
         transforms.Normalize(mean=imagenet_mean, std=imagenet_std),
     ])
 
+    # ---------- Dataset splits ----------
     full_train_dataset = datasets.ImageFolder(train_dir, transform=train_transforms)
-
     val_size = int(len(full_train_dataset) * val_split)
     train_size = len(full_train_dataset) - val_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
-
-    # Remove augments for val
-    val_dataset.dataset.transform = val_test_transforms
+    val_dataset.dataset.transform = val_test_transforms  # disable augments for val
 
     test_dataset = datasets.ImageFolder(test_dir, transform=val_test_transforms)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True,  num_workers=2, pin_memory=True)
-    val_loader   = DataLoader(val_dataset,   batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
-    test_loader  = DataLoader(test_dataset,  batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
+    # ---------- Dataloaders ----------
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
+                              num_workers=2, pin_memory=True, persistent_workers=True)
+    val_loader   = DataLoader(val_dataset, batch_size=batch_size, shuffle=False,
+                              num_workers=2, pin_memory=True, persistent_workers=True)
+    test_loader  = DataLoader(test_dataset, batch_size=batch_size, shuffle=False,
+                              num_workers=2, pin_memory=True, persistent_workers=True)
 
     return train_loader, val_loader, test_loader
 
 
+# ---------- Quick check ----------
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
