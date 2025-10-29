@@ -1,9 +1,38 @@
 #!/usr/bin/env python3
-# train.py — skeleton for ConvNeXt fine-tuning
+# train.py — ConvNeXt fine-tuning utilities and skeleton
 
 import argparse
 from pathlib import Path
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import torch
+
+
+# ---------- helpers ----------
+def accuracy(logits, targets):
+    preds = logits.argmax(dim=1)
+    return (preds == targets).float().mean().item()
+
+
+def current_lr(optimizer):
+    return optimizer.param_groups[0]["lr"]
+
+
+def plot_curves(history, out_dir):
+    epochs = range(1, len(history["train_loss"]) + 1)
+    plt.figure()
+    plt.plot(epochs, history["train_loss"], label="Train Loss")
+    plt.plot(epochs, history["val_loss"], label="Val Loss")
+    plt.xlabel("Epoch"); plt.ylabel("Loss"); plt.legend(); plt.tight_layout()
+    plt.savefig(out_dir / "training_loss.png"); plt.close()
+
+    plt.figure()
+    plt.plot(epochs, history["train_acc"], label="Train Acc")
+    plt.plot(epochs, history["val_acc"], label="Val Acc")
+    plt.xlabel("Epoch"); plt.ylabel("Accuracy"); plt.legend(); plt.tight_layout()
+    plt.savefig(out_dir / "training_acc.png"); plt.close()
 
 
 def main():
@@ -28,7 +57,6 @@ def main():
 
     print(f"Device: {device}")
     print(f"Data directory: {args.data}")
-    print("Argument parser initialized successfully.")
 
 
 if __name__ == "__main__":
