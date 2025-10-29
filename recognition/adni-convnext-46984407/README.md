@@ -97,7 +97,8 @@ The training set was deterministically split 80/20 into training and validation 
 
 #### Training vs Validation Accuracy
 
-![Training Accuracy](training_acc.png)
+<img width="640" height="480" alt="training_acc" src="https://github.com/user-attachments/assets/9e0535cd-6da6-4efe-9d34-87b43472e964" />
+
 
 ---
 
