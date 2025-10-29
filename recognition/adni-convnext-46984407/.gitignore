@@ -1,1 +1,11 @@
 ADNI/
+
+__pychache__/
+
+outputs/
+
+outputs_convnext_balanced/
+
+outputs_convnext_push80_v2/
+
+outputs_convnext_staged/
