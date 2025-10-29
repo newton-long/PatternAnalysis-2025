@@ -103,6 +103,25 @@ def mixup_criterion(crit, pred, y_a, y_b, lam):
     return lam * crit(pred, y_a) + (1 - lam) * crit(pred, y_b)
 
 
+# ---------- freeze helpers ----------
+def set_trainable(model, stage):
+    """Freeze/unfreeze ConvNeXt backbone progressively."""
+    for p in model.parameters():
+        p.requires_grad = False
+
+    if stage == "head":
+        for p in model.backbone.classifier.parameters():
+            p.requires_grad = True
+    elif stage == "last":
+        for p in model.backbone.features[-1].parameters():
+            p.requires_grad = True
+        for p in model.backbone.classifier.parameters():
+            p.requires_grad = True
+    elif stage == "all":
+        for p in model.parameters():
+            p.requires_grad = True
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
