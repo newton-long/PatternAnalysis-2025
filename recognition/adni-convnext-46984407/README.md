@@ -99,7 +99,6 @@ The training set was deterministically split 80/20 into training and validation 
 
 <img width="640" height="480" alt="training_acc" src="https://github.com/user-attachments/assets/9e0535cd-6da6-4efe-9d34-87b43472e964" />
 
-
 ---
 
 ## 🧠 Discussion
@@ -138,7 +137,16 @@ python train.py \
   --model ./outputs/best_model.pth \
   --variant small --tta
 
-### Dependencies
-pip install torch torchvision matplotlib numpy
+This project was developed in a Conda environment named **`comp3710`** using:
+
+| Package | Version |
+|----------|----------|
+| Python | 3.10 |
+| PyTorch | 2.5.1 |
+| Torchvision | 0.20.1 |
+| Matplotlib | 3.8 |
+| NumPy | 1.26 |
+| CUDA | 12.x (GPU-enabled) |
+
 
 ```
