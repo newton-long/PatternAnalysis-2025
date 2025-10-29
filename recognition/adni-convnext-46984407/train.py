@@ -86,6 +86,23 @@ def count_class_weights_from_train_dataset(train_ds, device):
     return torch.tensor(weights, dtype=torch.float32, device=device)
 
 
+# ---------- MixUp ----------
+def mixup_data(x, y, alpha=0.2):
+    if alpha <= 0:
+        return x, y, None, 1.0
+    lam = np.random.beta(alpha, alpha)
+    idx = torch.randperm(x.size(0), device=x.device)
+    mixed_x = lam * x + (1 - lam) * x[idx]
+    y_a, y_b = y, y[idx]
+    return mixed_x, y_a, y_b, lam
+
+
+def mixup_criterion(crit, pred, y_a, y_b, lam):
+    if y_b is None:
+        return crit(pred, y_a)
+    return lam * crit(pred, y_a) + (1 - lam) * crit(pred, y_b)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
