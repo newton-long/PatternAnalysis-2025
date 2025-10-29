@@ -136,17 +136,15 @@ python train.py \
   --data ./ADNI/AD_NC \
   --model ./outputs/best_model.pth \
   --variant small --tta
+```
 
 This project was developed in a Conda environment named **`comp3710`** using:
 
-| Package | Version |
-|----------|----------|
-| Python | 3.10 |
-| PyTorch | 2.5.1 |
-| Torchvision | 0.20.1 |
-| Matplotlib | 3.8 |
-| NumPy | 1.26 |
-| CUDA | 12.x (GPU-enabled) |
-
-
-```
+| Package     | Version            |
+| ----------- | ------------------ |
+| Python      | 3.10               |
+| PyTorch     | 2.5.1              |
+| Torchvision | 0.20.1             |
+| Matplotlib  | 3.8                |
+| NumPy       | 1.26               |
+| CUDA        | 12.x (GPU-enabled) |
