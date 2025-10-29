@@ -8,7 +8,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import torch
+import torch.nn as nn
 from torch.utils.data import ConcatDataset, Subset
+from torch.amp import autocast, GradScaler
 
 
 # ---------- helpers ----------
@@ -120,6 +122,40 @@ def set_trainable(model, stage):
     elif stage == "all":
         for p in model.parameters():
             p.requires_grad = True
+
+
+# ---------- train/eval loops ----------
+def train_one_epoch(model, loader, criterion, optimizer, scaler, device, mixup_alpha=0.0):
+    model.train()
+    loss_sum, acc_sum = 0.0, 0.0
+    for images, labels in loader:
+        images, labels = images.to(device), labels.to(device)
+        optimizer.zero_grad(set_to_none=True)
+        images, ya, yb, lam = mixup_data(images, labels, alpha=mixup_alpha)
+        with autocast("cuda", enabled=torch.cuda.is_available()):
+            logits = model(images)
+            loss = mixup_criterion(criterion, logits, ya, yb, lam)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+        loss_sum += loss.item()
+        acc_sum += accuracy(logits, labels)
+    n = len(loader)
+    return loss_sum / n, acc_sum / n
+
+
+@torch.no_grad()
+def evaluate(model, loader, criterion, device, tta=False):
+    model.eval()
+    loss_sum, acc_sum = 0.0, 0.0
+    for images, labels in loader:
+        images, labels = images.to(device), labels.to(device)
+        logits = (model(images) + model(torch.flip(images, dims=[3]))) / 2 if tta else model(images)
+        loss = criterion(logits, labels)
+        loss_sum += loss.item()
+        acc_sum += accuracy(logits, labels)
+    n = len(loader)
+    return loss_sum / n, acc_sum / n
 
 
 def main():
