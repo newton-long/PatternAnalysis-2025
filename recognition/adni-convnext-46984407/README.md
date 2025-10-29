@@ -93,7 +93,7 @@ The training set was deterministically split 80/20 into training and validation 
 
 #### Training vs Validation Loss
 
-![Training Loss](training_loss.png)
+<img width="640" height="480" alt="training_loss" src="https://github.com/user-attachments/assets/104e0625-c50e-48f2-a702-1486297f5d21" />
 
 #### Training vs Validation Accuracy
 
