@@ -4,7 +4,7 @@ This project fine-tunes a pretrained **ConvNeXt-Small** to classify **ADNI** bra
 - **AD** — Alzheimer’s Disease
 - **NC** — Normal Control
 
-The pipeline uses **staged fine-tuning**, **MixUp**, **label smoothing**, **AdamW + cosine LR**, **mixed precision**, **early stopping**, and **test-time augmentation (TTA)**. It produces clear visualisations (loss/accuracy curves + confusion matrix) and a classification report suitable for the COMP3710 report.
+The pipeline uses **staged fine-tuning**, **MixUp**, **label smoothing**, **AdamW + cosine LR**, **mixed precision**, **early stopping**, and **test-time augmentation (TTA)**. It produces clear visualisations (loss/accuracy curves + confusion matrix) and a classification report.
 
 ---
 
