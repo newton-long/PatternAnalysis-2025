@@ -56,16 +56,24 @@ python train.py \
   --tta \
   --save_dir ./outputs_final_run
 ```
-## This saves:
+## This outputs training visuals:
 ```
-./outputs_final_run/
-  best_model.pth
-  training_loss.png
-  training_acc.png
-  summary.txt
-```
+### Training Accuracy
 <img width="640" height="480" alt="training_acc" src="https://github.com/user-attachments/assets/3c03bdaa-bb43-4037-a0b4-2e0b1ade0e98" />
+
+The training accuracy (blue) increases gradually over time as the network learns to fit the data.
+Validation accuracy (orange) rises rapidly and then plateaus around 98–99%, showing that the model has converged.
+The slight gap between training and validation curves indicates mild overfitting, which is expected on small datasets like ADNI but controlled effectively by MixUp and weight decay.
+The late-epoch spike in training accuracy corresponds to the full-unfreezing stage, where all layers were fine-tuned, tightening the model’s fit.
+
+### Training Validation
 <img width="640" height="480" alt="training_loss" src="https://github.com/user-attachments/assets/21c65773-6775-4fc0-85fb-2de899c43f5d" />
+
+Both training and validation loss decrease smoothly across epochs, confirming stable optimisation.
+The validation loss stabilises earlier and remains low, indicating the model generalises well.
+The consistent downward trend without divergence shows that the learning rate schedule and regularisation (MixUp, label smoothing, weight decay) effectively prevented overfitting and training instability.
+
+
 
 ## Test + Visualise
 ```
@@ -77,6 +85,7 @@ python predict.py \
 ```
 ## Which saves:
 ./outputs_final_run/confusion_matrix.png
+
 <img width="640" height="480" alt="confusion_matrix" src="https://github.com/user-attachments/assets/554e4e43-08db-46a3-9d06-60e8ef0e665c" />
 
 **Core dependencies (exact stack used):**
