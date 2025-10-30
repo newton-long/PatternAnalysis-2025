@@ -119,9 +119,15 @@ The model was evaluated on the held-out test set using **Test-Time Augmentation 
 Below is the classification report and key performance metrics.
 
 ```
-      NC     0.9606    0.5408    0.6920      4460
-      AD     0.6844    0.9782    0.8053      4540
-accuracy                         0.7614      9000
+Classification Report:
+              precision    recall  f1-score   support
+
+          NC     0.9606    0.5408    0.6920      4460
+          AD     0.6844    0.9782    0.8053      4540
+
+    accuracy                         0.7614      9000
+   macro avg     0.8225    0.7595    0.7487      9000
+weighted avg     0.8213    0.7614    0.7492      9000
 ```
 
 ### **Performance Summary**
@@ -160,6 +166,12 @@ accuracy                         0.7614      9000
 | `pillow` (PIL) | 10.x | Image loading and resizing for ADNI dataset |
 | `argparse` | builtin | Command-line interface for training/testing scripts |
 | `pathlib` | builtin | Path handling for dataset and model files |
+
+## Conclusion
+The fine-tuned ConvNeXt-Small model achieved 76% test accuracy with high recall for Alzheimer’s Disease (97.8%), confirming strong generalisation and sensitivity in detecting AD.  
+The staged fine-tuning strategy, combined with MixUp, label smoothing, and cosine learning rate scheduling, proved effective for medical image transfer learning.  
+Overall, the project demonstrates the successful adaptation of modern CNN architectures to real-world clinical data.
+
 
 **References**
 
