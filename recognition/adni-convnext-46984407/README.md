@@ -107,6 +107,12 @@ python predict.py \
 
 <img width="640" height="480" alt="confusion_matrix" src="https://github.com/user-attachments/assets/554e4e43-08db-46a3-9d06-60e8ef0e665c" />
 
+The confusion matrix above shows the classification results on the held-out test set.
+The model correctly identified 4,441 Alzheimer’s (AD) cases and 2,412 Normal Control (NC) cases.
+It misclassified 2,048 NC samples as AD (false positives) and only 99 AD samples as NC (false negatives).
+This results in very high recall for AD (0.978) — meaning almost all AD cases were detected — and high precision for NC (0.961).
+Such a pattern indicates the model is slightly biased toward predicting AD, which is acceptable in medical screening tasks where missing a true AD case (false negative) is far more critical than a false alarm.
+
 **Core dependencies (exact stack used):**
 | Package | Version | Purpose |
 |----------|----------|----------|
