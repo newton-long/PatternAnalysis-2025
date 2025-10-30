@@ -1,150 +1,74 @@
-# Alzheimer’s Disease Classification using ConvNeXt
+# ADNI Alzheimer’s Classification with ConvNeXt-Small
 
-### Author: Newton Long
+This project fine-tunes a pretrained **ConvNeXt-Small** to classify **ADNI** brain MRI slices into:
+- **AD** — Alzheimer’s Disease
+- **NC** — Normal Control
 
-### Course: COMP3710 – Pattern Analysis 2025
-
-### Model: ConvNeXt-Small (Fine-Tuned on ADNI Dataset)
-
----
-
-## 🧩 Problem Description
-
-Alzheimer’s disease (AD) is a progressive neurodegenerative disorder characterized by structural brain changes observable in MRI scans.  
-The goal of this project was to **classify brain MRI scans as either Alzheimer’s Disease (AD) or Cognitively Normal (CN)** using the ADNI dataset.
-
-This task belongs to the _medical image classification_ domain and aims to demonstrate how modern deep learning architectures can identify subtle patterns in medical imagery. The project uses **ConvNeXt**, a next-generation convolutional network that integrates design principles from Vision Transformers while retaining convolutional efficiency.
+The pipeline uses **staged fine-tuning**, **MixUp**, **label smoothing**, **AdamW + cosine LR**, **mixed precision**, **early stopping**, and **test-time augmentation (TTA)**. It produces clear visualisations (loss/accuracy curves + confusion matrix) and a classification report suitable for the COMP3710 report.
 
 ---
 
-## ⚙️ Methodology
+## 1) Problem & Approach (short theory + how it works)
 
-### Model Architecture
+We treat 2D MRI slices as inputs to a modern convolutional backbone (ConvNeXt-Small). Starting from ImageNet-pretrained weights:
 
-A **ConvNeXt Small** backbone was fine-tuned from pretrained ImageNet weights.  
-The final classification layer was replaced with a custom two-class (AD / CN) linear head.
+1. **Staged fine-tuning** prevents catastrophic forgetting and stabilises transfer from natural images to medical MRIs:
+   - **Stage 1 (epochs 1–3):** train only the **classifier head**.
+   - **Stage 2 (epochs 4–12):** unfreeze the **last ConvNeXt block** + head.
+   - **Stage 3 (epochs 13+):** unfreeze **all layers** and fine-tune end-to-end.
 
-The training followed a **staged fine-tuning** process:
+2. **Regularisation & optimisation**:
+   - **MixUp (α=0.2)** early in training → smoother decision boundaries on small datasets; fades out later so the model “locks in”.
+   - **Label smoothing (0.05)** in cross-entropy → reduces overconfident errors.
+   - **Class weights** computed from the training set → handle class imbalance.
+   - **AdamW** optimiser with **cosine learning-rate annealing**.
+   - **AMP (autocast + GradScaler)** → faster training and lower VRAM.
+   - **Early stopping** on validation accuracy (patience=8).
 
-| Stage                     | Epoch Range | Layers Trained                  | Learning Rate | Description            |
-| ------------------------- | ----------- | ------------------------------- | ------------- | ---------------------- |
-| **1 – Head Only**         | 1–3         | Classifier                      | 1e-3          | Stabilizes final layer |
-| **2 – Last Block + Head** | 4–12        | Last feature block & classifier | 7.5e-5–3e-4   | Adapts deeper layers   |
-| **3 – Full Model**        | 13–30       | Entire network                  | 3e-5–1e-4     | Fine-tunes all layers  |
+3. **Evaluation**:
+   - **TTA** averages logits of original + horizontally flipped images.
+   - We generate a **confusion matrix** and **classification report** on the test set.
 
-Optimized using **AdamW** with **CosineAnnealingLR** scheduler and **early stopping** (patience = 8).
+**Pre-processing/transforms** (typical choices for medical classification):
+- Resize to `image_size=224`.
+- Center/resize crop, normalization to ImageNet stats.
+- Light intensity/flip augments in training; no heavy spatial warps to preserve anatomy.
 
-Loss Function: **Weighted Cross-Entropy** (handles class imbalance)  
-Extras: **Label smoothing (0.05)** and **Mixed-precision training** for faster convergence.
-
----
-
-### Data & Augmentation
-
-Dataset: `ADNI/AD_NC` (train / test folders).  
-The training set was deterministically split 80/20 into training and validation sets.
-
-**MRI-safe augmentations:**
-
-- Random resized crop (0.75–1.0 scale)
-- Random horizontal and vertical flips
-- ±15° rotations and mild affine/perspective transformations
-- Brightness ±0.15, contrast ±0.3
-- Gaussian blur and light noise injection
-- Random erasing to simulate missing slices
-- **RepeatAug** for multiple random augmentations per image
-- **MixUp (α = 0.2)** for the first 10 epochs
-
-**Evaluation transforms:** resize → center crop → grayscale → normalization.  
-**Balanced sampling:** ensures equal AD / CN samples per batch.
+**Split justification**:
+- We use `val_split=0.2` to monitor generalisation and enable early stopping without sacrificing too much training signal—appropriate for a limited dataset like ADNI.
 
 ---
 
-### Training Configuration
+## 2) Reproducible Commands (exact)
 
-| Parameter     | Value                          |
-| ------------- | ------------------------------ |
-| Epochs        | 30                             |
-| Batch Size    | 16                             |
-| Learning Rate | 3e-4 (adaptive)                |
-| Weight Decay  | 5e-4                           |
-| Optimizer     | AdamW                          |
-| Scheduler     | CosineAnnealingLR              |
-| Image Size    | 224 × 224                      |
-| Framework     | PyTorch 2.2 + Torchvision 0.17 |
-| Device        | CUDA (mixed precision)         |
-
----
-
-## 📊 Results
-
-### Accuracy Summary
-
-| Metric                       | Value                  |
-| ---------------------------- | ---------------------- |
-| **Best Validation Accuracy** | **99.91 %** (epoch 22) |
-| **Test Accuracy**            | **77.26 %**            |
-
-> Validation performance reached near-perfect accuracy, while test results show realistic generalization to unseen MRI scans.
-
----
-
-### Training Curves
-
-#### Training vs Validation Loss
-
-<img width="640" height="480" alt="training_loss" src="https://github.com/user-attachments/assets/104e0625-c50e-48f2-a702-1486297f5d21" />
-
-#### Training vs Validation Accuracy
-
-<img width="640" height="480" alt="training_acc" src="https://github.com/user-attachments/assets/9e0535cd-6da6-4efe-9d34-87b43472e964" />
-
----
-
-## 🧠 Discussion
-
-- **ConvNeXt-Small** achieved strong in-domain learning (near-perfect validation), demonstrating excellent fit to the ADNI dataset.
-- The **77% test accuracy** aligns with expected results in MRI-based Alzheimer’s classification tasks due to dataset domain shifts and limited size.
-- **MixUp** and **RepeatAug** improved generalization, reducing overfitting.
-- **Staged unfreezing** prevented catastrophic forgetting and stabilized training.
-- **Potential improvements:**
-  - Larger image sizes (e.g., 256–384px) for finer spatial features.
-  - Cross-site domain adaptation.
-  - Ensembling multiple fine-tuned ConvNeXt variants.
-
----
-
-## 🧪 Reproducibility
-
-### Training
-
+### Train
 ```bash
 python train.py \
   --data ./ADNI/AD_NC \
   --variant small \
-  --epochs 30 \
+  --epochs 50 \
   --batch_size 16 \
   --lr 3e-4 \
   --wd 5e-4 \
   --mixup 0.2 \
   --tta \
-  --save_dir ./outputs
+  --save_dir ./outputs_final_run
 
-
-  ### Inference / Testing
-  python predict.py \
-  --data ./ADNI/AD_NC \
-  --model ./outputs/best_model.pth \
-  --variant small --tta
+## This saves:
 ```
-
-This project was developed in a Conda environment named **`comp3710`** using:
-
-| Package     | Version            |
-| ----------- | ------------------ |
-| Python      | 3.10               |
-| PyTorch     | 2.5.1              |
-| Torchvision | 0.20.1             |
-| Matplotlib  | 3.8                |
-| NumPy       | 1.26               |
-| CUDA        | 12.x (GPU-enabled) |
+./outputs_final_run/
+  best_model.pth
+  training_loss.png
+  training_acc.png
+  summary.txt
+  ```
+## Test + Visualise
+```
+python predict.py \
+  --data ./ADNI/AD_NC \
+  --model ./outputs_final_run/best_model.pth \
+  --variant small \
+  --tta
+```
+Which saves:
+./outputs_final_run/confusion_matrix.png
