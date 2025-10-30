@@ -113,6 +113,38 @@ It misclassified 2,048 NC samples as AD (false positives) and only 99 AD samples
 This results in very high recall for AD (0.978) — meaning almost all AD cases were detected — and high precision for NC (0.961).
 Such a pattern indicates the model is slightly biased toward predicting AD, which is acceptable in medical screening tasks where missing a true AD case (false negative) is far more critical than a false alarm.
 
+## Model Evaluation (Test Set Results)
+
+The model was evaluated on the held-out test set using **Test-Time Augmentation (TTA)** to improve robustness.  
+Below is the classification report and key performance metrics.
+
+      NC     0.9606    0.5408    0.6920      4460
+      AD     0.6844    0.9782    0.8053      4540
+
+accuracy                         0.7614      9000
+
+
+### **Performance Summary**
+
+| Metric | Value | Description |
+|:--------|:------:|:------------|
+| **Overall Accuracy** | **76.14%** | Percentage of correctly classified MRI slices |
+| **Average Test Loss** | **0.55** | Mean cross-entropy loss across the test set |
+| **NC Precision** | **96.06%** | When predicting “Normal Control”, 96% were correct |
+| **NC Recall** | **54.08%** | Model correctly identified 54% of true NC cases |
+| **AD Precision** | **68.44%** | When predicting “Alzheimer’s Disease”, 68% were correct |
+| **AD Recall** | **97.82%** | Model correctly identified almost all true AD cases |
+
+---
+
+### **Interpretation**
+
+> The model achieved **76.1% accuracy** on unseen test data, demonstrating strong generalisation given the limited dataset size.  
+> The results show a clear trade-off: the model prioritises **high recall for Alzheimer’s Disease (97.8%)** at the cost of lower recall for Normal Controls (54.1%).  
+> This bias towards detecting AD is desirable in a medical screening context, where **missing a true AD case (false negative)** is far more critical than a false alarm.  
+> The high **precision for NC (96.1%)** indicates that when the model predicts “Normal”, it is typically correct and confident.  
+> Overall, the fine-tuned **ConvNeXt-Small** model demonstrates reliable classification performance and aligns with clinical priorities for early, sensitive Alzheimer’s detection.
+
 **Core dependencies (exact stack used):**
 | Package | Version | Purpose |
 |----------|----------|----------|
