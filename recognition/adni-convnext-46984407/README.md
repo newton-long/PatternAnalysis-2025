@@ -57,7 +57,6 @@ python train.py \
   --save_dir ./outputs_final_run
 ```
 ## This outputs training visuals:
-```
 ### Training Accuracy
 <img width="640" height="480" alt="training_acc" src="https://github.com/user-attachments/assets/3c03bdaa-bb43-4037-a0b4-2e0b1ade0e98" />
 
