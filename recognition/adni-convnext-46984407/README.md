@@ -37,6 +37,8 @@ We treat 2D MRI slices as inputs to a modern convolutional backbone (ConvNeXt-Sm
 **Split justification**:
 - We use `val_split=0.2` to monitor generalisation and enable early stopping without sacrificing too much training signal—appropriate for a limited dataset like ADNI.
 
+**Algorithm Visualisation**:
+<img width="1710" height="1144" alt="adni_convnext_flow" src="https://github.com/user-attachments/assets/86fbdbe4-4614-45d8-abdc-20403c172767" />
 ---
 
 ## 2) Reproducible Commands (exact)
@@ -53,7 +55,7 @@ python train.py \
   --mixup 0.2 \
   --tta \
   --save_dir ./outputs_final_run
-
+```
 ## This saves:
 ```
 ./outputs_final_run/
@@ -61,7 +63,10 @@ python train.py \
   training_loss.png
   training_acc.png
   summary.txt
-  ```
+```
+<img width="640" height="480" alt="training_acc" src="https://github.com/user-attachments/assets/3c03bdaa-bb43-4037-a0b4-2e0b1ade0e98" />
+<img width="640" height="480" alt="training_loss" src="https://github.com/user-attachments/assets/21c65773-6775-4fc0-85fb-2de899c43f5d" />
+
 ## Test + Visualise
 ```
 python predict.py \
@@ -70,5 +75,25 @@ python predict.py \
   --variant small \
   --tta
 ```
-Which saves:
+## Which saves:
 ./outputs_final_run/confusion_matrix.png
+<img width="640" height="480" alt="confusion_matrix" src="https://github.com/user-attachments/assets/554e4e43-08db-46a3-9d06-60e8ef0e665c" />
+
+**Core dependencies (exact stack used):**
+| Package | Version | Purpose |
+|----------|----------|----------|
+| `python` | 3.10 | Core interpreter used in COMP3710 environment |
+| `pytorch` | 2.5.1 | Deep learning framework for model training |
+| `torchvision` | 0.20.1 | Provides ConvNeXt pretrained models and image transforms |
+| `torchaudio` | 2.5.1 | Installed automatically with PyTorch (not directly used) |
+| `numpy` | 1.26.x | Numerical computation and tensor manipulation |
+| `matplotlib` | 3.8.x | Generates training loss/accuracy plots |
+| `scikit-learn` | 1.5.x | Provides confusion matrix and classification report utilities |
+| `tqdm` | 4.66.x | Progress bar during training and evaluation loops |
+| `pandas` | 2.2.x | Lightweight dataset indexing and class weight computation |
+| `pillow` (PIL) | 10.x | Image loading and resizing for ADNI dataset |
+| `argparse` | builtin | Command-line interface for training/testing scripts |
+| `pathlib` | builtin | Path handling for dataset and model files |
+
+
+
