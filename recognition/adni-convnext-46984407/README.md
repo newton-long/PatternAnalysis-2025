@@ -33,12 +33,12 @@ We treat 2D MRI slices as inputs to a modern convolutional backbone (ConvNeXt-Sm
 
 All MRI slices from the ADNI dataset were preprocessed to ensure compatibility with ConvNeXt’s ImageNet pretraining. Each image was:
 - **Resized to 224×224 pixels** to match ConvNeXt-Small input dimensions.
-- **Normalized** using ImageNet statistics (`mean=[0.485, 0.456, 0.406]`, `std=[0.229, 0.224, 0.225]`), as recommended in the PyTorch ConvNeXt documentation.
-- **Lightly augmented** during training with random horizontal flips and minor brightness/contrast jitter to improve robustness to orientation and lighting variations across MRI scans.
-- Validation and test sets were only **center-cropped and normalized**, with no random augmentations, to ensure consistent and fair evaluation.
+- **Normalized** using ImageNet statistics (`mean=[0.485, 0.456, 0.406]`, `std=[0.229, 0.224, 0.225]`), following the official PyTorch ConvNeXt model implementation [1].
+- **Lightly augmented** during training with random horizontal flips and minor brightness/contrast jitter to improve robustness to patient positioning and scanner variability.
+- Validation and test sets were only **center-cropped and normalized**, with no random augmentations, to ensure consistent evaluation.
 
-These preprocessing steps follow standard practice for transfer learning in medical imaging (see *Liu et al., A ConvNet for the 2020s, 2022*; PyTorch ConvNeXt transform guidelines).  
-They help the model generalize better without altering the anatomical structure of MRI slices.
+These preprocessing steps follow common transfer learning procedures in medical imaging tasks, where ImageNet-normalized models are adapted to MRI or CT modalities [2].  
+Light augmentation helps generalisation while preserving anatomical fidelity — critical for medical data.
 
 ---
 
@@ -50,11 +50,13 @@ The dataset was divided into **training, validation, and test subsets** to enabl
 - **20% Validation Set** — used to monitor performance during training and trigger early stopping once validation accuracy plateaued.  
 - **Separate Test Set** — unseen during training and validation; used once for final evaluation.
 
-This **80/20 split** strikes a balance between having sufficient training data and a meaningful validation signal. It’s particularly suitable for small medical datasets like ADNI, where too small a validation set increases variance and too large a split reduces training stability.
+This **80/20 split** strikes a balance between having sufficient training data and a meaningful validation signal. It’s a standard ratio in small medical datasets, providing enough variance in validation while preserving training stability [2].  
 
-The separate **test set** ensures an unbiased assessment of true generalisation capability, while the validation split enables controlled tuning of model hyperparameters and early stopping to prevent overfitting.
+The separate **test set** ensures an unbiased estimate of generalisation, while the validation split allows controlled tuning of hyperparameters and early stopping to prevent overfitting.
 
-In summary, preprocessing standardized all images for consistent input into ConvNeXt, and the 80/20 split (with a held-out test set) ensured the model was trained effectively while maintaining a fair evaluation protocol.
+In summary, preprocessing standardized all images for consistent ConvNeXt input, and the 80/20 split (with a held-out test set) ensured fair, reproducible evaluation.
+
+---
 
 **Algorithm Visualisation**:
 <img width="1710" height="1144" alt="adni_convnext_flow" src="https://github.com/user-attachments/assets/86fbdbe4-4614-45d8-abdc-20403c172767" />
@@ -121,5 +123,9 @@ python predict.py \
 | `argparse` | builtin | Command-line interface for training/testing scripts |
 | `pathlib` | builtin | Path handling for dataset and model files |
 
+**References**
+
+[1] PyTorch Vision Models Documentation — ConvNeXt: https://pytorch.org/vision/stable/models/convnext.html  
+[2] Krizhevsky, A., Sutskever, I., & Hinton, G. E. (2012). *ImageNet Classification with Deep Convolutional Neural Networks.* NeurIPS. (Commonly referenced for ImageNet normalization & transfer-learning preprocessing)
 
 
