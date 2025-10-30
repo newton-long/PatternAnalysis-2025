@@ -118,10 +118,11 @@ Such a pattern indicates the model is slightly biased toward predicting AD, whic
 The model was evaluated on the held-out test set using **Test-Time Augmentation (TTA)** to improve robustness.  
 Below is the classification report and key performance metrics.
 
+```
       NC     0.9606    0.5408    0.6920      4460
       AD     0.6844    0.9782    0.8053      4540
 accuracy                         0.7614      9000
-
+```
 
 ### **Performance Summary**
 
