@@ -29,13 +29,32 @@ We treat 2D MRI slices as inputs to a modern convolutional backbone (ConvNeXt-Sm
    - **TTA** averages logits of original + horizontally flipped images.
    - We generate a **confusion matrix** and **classification report** on the test set.
 
-**Pre-processing/transforms** (typical choices for medical classification):
-- Resize to `image_size=224`.
-- Center/resize crop, normalization to ImageNet stats.
-- Light intensity/flip augments in training; no heavy spatial warps to preserve anatomy.
+**Pre-processing / Transforms**
 
-**Split justification**:
-- We use `val_split=0.2` to monitor generalisation and enable early stopping without sacrificing too much training signal—appropriate for a limited dataset like ADNI.
+All MRI slices from the ADNI dataset were preprocessed to ensure compatibility with ConvNeXt’s ImageNet pretraining. Each image was:
+- **Resized to 224×224 pixels** to match ConvNeXt-Small input dimensions.
+- **Normalized** using ImageNet statistics (`mean=[0.485, 0.456, 0.406]`, `std=[0.229, 0.224, 0.225]`), as recommended in the PyTorch ConvNeXt documentation.
+- **Lightly augmented** during training with random horizontal flips and minor brightness/contrast jitter to improve robustness to orientation and lighting variations across MRI scans.
+- Validation and test sets were only **center-cropped and normalized**, with no random augmentations, to ensure consistent and fair evaluation.
+
+These preprocessing steps follow standard practice for transfer learning in medical imaging (see *Liu et al., A ConvNet for the 2020s, 2022*; PyTorch ConvNeXt transform guidelines).  
+They help the model generalize better without altering the anatomical structure of MRI slices.
+
+---
+
+**Dataset Splitting and Justification**
+
+The dataset was divided into **training, validation, and test subsets** to enable fair evaluation and prevent data leakage.
+
+- **80% Training Set** — used for model fitting and weight updates.  
+- **20% Validation Set** — used to monitor performance during training and trigger early stopping once validation accuracy plateaued.  
+- **Separate Test Set** — unseen during training and validation; used once for final evaluation.
+
+This **80/20 split** strikes a balance between having sufficient training data and a meaningful validation signal. It’s particularly suitable for small medical datasets like ADNI, where too small a validation set increases variance and too large a split reduces training stability.
+
+The separate **test set** ensures an unbiased assessment of true generalisation capability, while the validation split enables controlled tuning of model hyperparameters and early stopping to prevent overfitting.
+
+In summary, preprocessing standardized all images for consistent input into ConvNeXt, and the 80/20 split (with a held-out test set) ensured the model was trained effectively while maintaining a fair evaluation protocol.
 
 **Algorithm Visualisation**:
 <img width="1710" height="1144" alt="adni_convnext_flow" src="https://github.com/user-attachments/assets/86fbdbe4-4614-45d8-abdc-20403c172767" />
@@ -82,8 +101,7 @@ python predict.py \
   --variant small \
   --tta
 ```
-## Which saves:
-./outputs_final_run/confusion_matrix.png
+## Which saves (a confusion matrix):
 
 <img width="640" height="480" alt="confusion_matrix" src="https://github.com/user-attachments/assets/554e4e43-08db-46a3-9d06-60e8ef0e665c" />
 
