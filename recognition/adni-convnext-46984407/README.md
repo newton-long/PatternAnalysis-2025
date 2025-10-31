@@ -157,7 +157,6 @@ weighted avg     0.8213    0.7614    0.7492      9000
 | `python` | 3.10 | Core interpreter used in COMP3710 environment |
 | `pytorch` | 2.5.1 | Deep learning framework for model training |
 | `torchvision` | 0.20.1 | Provides ConvNeXt pretrained models and image transforms |
-| `torchaudio` | 2.5.1 | Installed automatically with PyTorch (not directly used) |
 | `numpy` | 1.26.x | Numerical computation and tensor manipulation |
 | `matplotlib` | 3.8.x | Generates training loss/accuracy plots |
 | `scikit-learn` | 1.5.x | Provides confusion matrix and classification report utilities |
@@ -176,6 +175,4 @@ Overall, the project demonstrates the successful adaptation of modern CNN archit
 **References**
 
 [1] PyTorch Vision Models Documentation — ConvNeXt: https://pytorch.org/vision/stable/models/convnext.html  
-[2] Krizhevsky, A., Sutskever, I., & Hinton, G. E. (2012). *ImageNet Classification with Deep Convolutional Neural Networks.* NeurIPS. (Commonly referenced for ImageNet normalization & transfer-learning preprocessing)
-
-
+[2] Krizhevsky, A., Sutskever, I., & Hinton, G. E. (2012). *ImageNet Classification with Deep Convolutional Neural Networks.* NeurIPS.
