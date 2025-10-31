@@ -81,6 +81,6 @@ if __name__ == "__main__":
     with torch.no_grad():
         logits = model(x)
 
-    print("OK ✅ forward pass works.")
+    print("OK forward pass works.")
     print("Input :", tuple(x.shape))
     print("Output:", tuple(logits.shape))

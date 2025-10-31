@@ -85,7 +85,7 @@ def main():
         total_acc += (logits.argmax(1) == labels).float().mean().item()
 
     n = len(test_loader)
-    print(f"\n✅ Test accuracy: {total_acc/n:.4f}")
+    print(f"\nTest accuracy: {total_acc/n:.4f}")
     print(f"Average test loss: {total_loss/n:.4f}")
 
     # --- Save confusion matrix ---
